@@ -272,22 +272,16 @@ export default function Page() {
       addLine('By signing this Cover Page, each party agrees to enter into this MNDA as of the Effective Date.')
       addEmptyLine(8)
 
-      // Signature table
-      const col1 = margin
-      const col2 = pageW / 2 - 5
-      const col3 = pageW / 2 + 5
-      const colW = pageW / 2 - margin - 5
-      const tableTop = y
-      const lineH9 = 9
+      // Signature table - 3 columns: label | Party 1 | Party 2
+      const gap = 4
+      const labelW = 30
+      const colW = (maxW - labelW - gap * 2) / 2
+      const labelX = margin
+      const p1Center = margin + labelW + gap + colW / 2
+      const p2Center = margin + labelW + gap + colW + gap + colW / 2
+      const rowH = 7
 
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(9)
-      doc.text('', col1, y)
-      doc.text('PARTY 1', col2 + colW / 2, y, { align: 'center' })
-      doc.text('PARTY 2', col3 + colW / 2, y, { align: 'center' })
-      y += lineH9 * 1.8
-
-      const rows: { label: string; v1: string; v2: string }[] = [
+      const sigRows: { label: string; v1: string; v2: string }[] = [
         { label: 'Signature', v1: '', v2: '' },
         { label: 'Print Name', v1: d.party1.name, v2: d.party2.name },
         { label: 'Title', v1: d.party1.title, v2: d.party2.title },
@@ -296,28 +290,40 @@ export default function Page() {
         { label: 'Date', v1: d.party1.date, v2: d.party2.date },
       ]
 
-      for (const row of rows) {
-        if (y + lineH9 > pageH - margin) {
+      function drawUnderline(cx: number, textW: number) {
+        const w = textW > 0 ? textW : 40
+        doc.setDrawColor(180)
+        doc.line(cx - w / 2, y + 1.5, cx + w / 2, y + 1.5)
+      }
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.text('', labelX, y)
+      doc.text('PARTY 1', p1Center, y, { align: 'center' })
+      doc.text('PARTY 2', p2Center, y, { align: 'center' })
+      y += rowH + 3
+
+      for (const row of sigRows) {
+        if (y + rowH > pageH - margin) {
           doc.addPage()
           y = margin
         }
 
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(9)
-        doc.text(row.label, col1, y)
 
-        const val1 = row.v1 || ''
-        const val2 = row.v2 || ''
-        doc.text(val1, col2 + colW / 2, y, { align: 'center' })
-        doc.text(val2, col3 + colW / 2, y, { align: 'center' })
+        doc.text(row.label, labelX, y)
 
-        const underline1 = doc.getTextWidth(val1) > 0 ? doc.getTextWidth(val1) : 40
-        const underline2 = doc.getTextWidth(val2) > 0 ? doc.getTextWidth(val2) : 40
-        doc.setDrawColor(180)
-        doc.line(col2 + (colW - underline1) / 2, y + 1, col2 + (colW + underline1) / 2, y + 1)
-        doc.line(col3 + (colW - underline2) / 2, y + 1, col3 + (colW + underline2) / 2, y + 1)
+        const v1 = row.v1 || ''
+        const v2 = row.v2 || ''
 
-        y += lineH9 * 1.6
+        doc.text(v1 || ' ', p1Center, y, { align: 'center' })
+        doc.text(v2 || ' ', p2Center, y, { align: 'center' })
+
+        drawUnderline(p1Center, doc.getTextWidth(v1))
+        drawUnderline(p2Center, doc.getTextWidth(v2))
+
+        y += rowH + 2
       }
 
       // Add page break before standard terms
