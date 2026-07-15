@@ -272,14 +272,53 @@ export default function Page() {
       addLine('By signing this Cover Page, each party agrees to enter into this MNDA as of the Effective Date.')
       addEmptyLine(8)
 
-      // Table header
-      addLine(`${' '.repeat(40)}PARTY 1${' '.repeat(15)}PARTY 2`, 'bold')
-      addLine(`Signature:${' '.repeat(33)}____________________     ____________________`)
-      addLine(`Print Name:${' '.repeat(33)}${d.party1.name || '____________________'}     ${d.party2.name || '____________________'}`)
-      addLine(`Title:${' '.repeat(38)}${d.party1.title || '____________________'}     ${d.party2.title || '____________________'}`)
-      addLine(`Company:${' '.repeat(35)}${d.party1.company || '____________________'}     ${d.party2.company || '____________________'}`)
-      addLine(`Notice Address:${' '.repeat(28)}${d.party1.noticeAddress || '____________________'}     ${d.party2.noticeAddress || '____________________'}`)
-      addLine(`Date:${' '.repeat(39)}${d.party1.date || '____________________'}     ${d.party2.date || '____________________'}`)
+      // Signature table
+      const col1 = margin
+      const col2 = pageW / 2 - 5
+      const col3 = pageW / 2 + 5
+      const colW = pageW / 2 - margin - 5
+      const tableTop = y
+      const lineH9 = 9
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.text('', col1, y)
+      doc.text('PARTY 1', col2 + colW / 2, y, { align: 'center' })
+      doc.text('PARTY 2', col3 + colW / 2, y, { align: 'center' })
+      y += lineH9 * 1.8
+
+      const rows: { label: string; v1: string; v2: string }[] = [
+        { label: 'Signature', v1: '', v2: '' },
+        { label: 'Print Name', v1: d.party1.name, v2: d.party2.name },
+        { label: 'Title', v1: d.party1.title, v2: d.party2.title },
+        { label: 'Company', v1: d.party1.company, v2: d.party2.company },
+        { label: 'Notice Address', v1: d.party1.noticeAddress, v2: d.party2.noticeAddress },
+        { label: 'Date', v1: d.party1.date, v2: d.party2.date },
+      ]
+
+      for (const row of rows) {
+        if (y + lineH9 > pageH - margin) {
+          doc.addPage()
+          y = margin
+        }
+
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(9)
+        doc.text(row.label, col1, y)
+
+        const val1 = row.v1 || ''
+        const val2 = row.v2 || ''
+        doc.text(val1, col2 + colW / 2, y, { align: 'center' })
+        doc.text(val2, col3 + colW / 2, y, { align: 'center' })
+
+        const underline1 = doc.getTextWidth(val1) > 0 ? doc.getTextWidth(val1) : 40
+        const underline2 = doc.getTextWidth(val2) > 0 ? doc.getTextWidth(val2) : 40
+        doc.setDrawColor(180)
+        doc.line(col2 + (colW - underline1) / 2, y + 1, col2 + (colW + underline1) / 2, y + 1)
+        doc.line(col3 + (colW - underline2) / 2, y + 1, col3 + (colW + underline2) / 2, y + 1)
+
+        y += lineH9 * 1.6
+      }
 
       // Add page break before standard terms
       doc.addPage()
