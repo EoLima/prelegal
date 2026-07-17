@@ -32,6 +32,11 @@ pids/
 *.pid
 *.seed
 
+# Database
+*.db
+*.db-journal
+data/
+
 # Dependencies
 .pnp
 .pnp.js
