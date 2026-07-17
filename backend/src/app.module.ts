@@ -15,7 +15,7 @@ import { AppController } from './app.controller'
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
-      exclude: ['/api*'],
+      exclude: ['/api/(.*)'],
     }),
     AuthModule,
   ],
