@@ -1,6 +1,8 @@
 #!/bin/bash
+set -e
 
 cd "$(dirname "$0")/.."
 
 echo "Stopping Prelegal..."
-pkill -f "node backend/dist/main.js" 2>/dev/null || echo "Not running"
+docker compose down
+echo "Stopped."

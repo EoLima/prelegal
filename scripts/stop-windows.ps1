@@ -1,5 +1,8 @@
 #!/usr/bin/env pwsh
 
+$ProjectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+Set-Location $ProjectRoot
+
 Write-Host "Stopping Prelegal..." -ForegroundColor Cyan
-Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match "backend/dist/main.js" } | Stop-Process -Force
-Write-Host "Stopped" -ForegroundColor Green
+docker compose down
+Write-Host "Stopped." -ForegroundColor Green

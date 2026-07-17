@@ -1,9 +1,11 @@
 #!/bin/bash
+set -e
 
 cd "$(dirname "$0")/.."
 
-echo "Building frontend..."
-cd frontend && npm run build && cd ..
+echo "Starting Prelegal with Docker..."
+docker compose up --build -d
 
-echo "Starting backend..."
-exec node backend/dist/main.js
+echo ""
+echo "Prelegal is running at http://localhost:8000"
+echo "Run scripts/stop-linux.sh to stop."
