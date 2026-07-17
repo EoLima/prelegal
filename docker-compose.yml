@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - prelegal-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      - JWT_SECRET=${JWT_SECRET:-prelegal-dev-secret-change-in-production}
+      - DB_PATH=data/prelegal.db
+
+volumes:
+  prelegal-data:

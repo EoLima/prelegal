@@ -5,8 +5,8 @@ type RadioGroupProps = {
 
 function RadioGroup({ legend, children }: RadioGroupProps) {
   return (
-    <fieldset className="rounded-lg border border-slate-100 bg-slate-50/50 p-4 space-y-3">
-      <legend className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
+    <fieldset className="rounded-lg border p-4 space-y-3" style={{ borderColor: '#e0e0e0', backgroundColor: '#fafbfc' }}>
+      <legend className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: '#888888' }}>
         {legend}
       </legend>
       {children}

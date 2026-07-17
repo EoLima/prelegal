@@ -22,8 +22,11 @@ const fields: { label: string; key: keyof PartyInfo; type?: string }[] = [
 function PartyCard({ title, index, party, onChange }: PartyCardProps) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3.5 shadow-sm">
-      <h3 className="font-semibold text-slate-800 text-base flex items-center gap-2.5">
-        <span className="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">
+      <h3 className="font-semibold text-base flex items-center gap-2.5" style={{ color: '#032147' }}>
+        <span
+          className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+          style={{ backgroundColor: '#209dd7' }}
+        >
           {index}
         </span>
         {title}
