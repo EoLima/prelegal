@@ -12,9 +12,11 @@ type AgreementTermsProps = {
 }
 
 function AgreementTerms({ form, onUpdate }: AgreementTermsProps) {
+  const radioStyle = { accentColor: '#209dd7' }
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4 shadow-sm">
-      <h3 className="font-semibold text-slate-800 text-base">Agreement Terms</h3>
+      <h3 className="font-semibold text-base" style={{ color: '#032147' }}>Agreement Terms</h3>
 
       <FormField label="Purpose">
         <Textarea
@@ -59,17 +61,20 @@ function AgreementTerms({ form, onUpdate }: AgreementTermsProps) {
             name="mndaTerm"
             checked={form.mndaTermType === 'expires'}
             onChange={() => onUpdate('mndaTermType', 'expires')}
-            className="accent-slate-800"
+            style={radioStyle}
           />
-          <span className="text-slate-700">Expires</span>
+          <span style={{ color: '#1a1a2e' }}>Expires</span>
           <input
             type="number"
             min={1}
-            className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400/20"
+            className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm text-center focus:outline-none focus:ring-2"
+            style={{ borderColor: '#e0e0e0' }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = '#209dd7'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(32, 157, 215, 0.2)' }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = '' }}
             value={form.mndaTermYears}
             onChange={(e) => onUpdate('mndaTermYears', Number(e.target.value))}
           />
-          <span className="text-slate-600">year(s) from Effective Date</span>
+          <span style={{ color: '#888888' }}>year(s) from Effective Date</span>
         </label>
         <label className="flex items-center gap-3 text-sm cursor-pointer">
           <input
@@ -77,9 +82,9 @@ function AgreementTerms({ form, onUpdate }: AgreementTermsProps) {
             name="mndaTerm"
             checked={form.mndaTermType === 'continues'}
             onChange={() => onUpdate('mndaTermType', 'continues')}
-            className="accent-slate-800"
+            style={radioStyle}
           />
-          <span className="text-slate-700">Continues until terminated</span>
+          <span style={{ color: '#1a1a2e' }}>Continues until terminated</span>
         </label>
       </RadioGroup>
 
@@ -90,16 +95,19 @@ function AgreementTerms({ form, onUpdate }: AgreementTermsProps) {
             name="confidentiality"
             checked={form.confidentialityType === 'years'}
             onChange={() => onUpdate('confidentialityType', 'years')}
-            className="accent-slate-800"
+            style={radioStyle}
           />
           <input
             type="number"
             min={1}
-            className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400/20"
+            className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm text-center focus:outline-none focus:ring-2"
+            style={{ borderColor: '#e0e0e0' }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = '#209dd7'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(32, 157, 215, 0.2)' }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = '' }}
             value={form.confidentialityYears}
             onChange={(e) => onUpdate('confidentialityYears', Number(e.target.value))}
           />
-          <span className="text-slate-600">year(s) from Effective Date</span>
+          <span style={{ color: '#888888' }}>year(s) from Effective Date</span>
         </label>
         <label className="flex items-center gap-3 text-sm cursor-pointer">
           <input
@@ -107,9 +115,9 @@ function AgreementTerms({ form, onUpdate }: AgreementTermsProps) {
             name="confidentiality"
             checked={form.confidentialityType === 'perpetuity'}
             onChange={() => onUpdate('confidentialityType', 'perpetuity')}
-            className="accent-slate-800"
+            style={radioStyle}
           />
-          <span className="text-slate-700">In perpetuity</span>
+          <span style={{ color: '#1a1a2e' }}>In perpetuity</span>
         </label>
       </RadioGroup>
 
