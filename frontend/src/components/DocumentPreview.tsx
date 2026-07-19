@@ -23,24 +23,26 @@ function DocumentPreview({ form }: DocumentPreviewProps) {
           </h2>
           <span className="text-xs" style={{ color: '#888888' }}>Updates automatically</span>
         </div>
-        {hasData ? (
-          <div
-            ref={previewRef}
-            id="pdf-content"
-            className="p-6 sm:p-8 font-serif text-sm leading-relaxed whitespace-pre-wrap bg-white"
-            style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#1a1a2e', lineHeight: '1.8' }}
-          >
-            {fillTemplate(form)}
-          </div>
-        ) : (
-          <div className="p-12 flex flex-col items-center justify-center text-center" style={{ color: '#888888' }}>
-            <svg className="w-12 h-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
-            <p className="text-sm">Chat with the AI assistant to generate your document.</p>
-            <p className="text-xs mt-1">The preview will update as you provide information.</p>
-          </div>
-        )}
+        <div className="max-h-[500px] xl:max-h-[calc(100vh-220px)] overflow-y-auto">
+          {hasData ? (
+            <div
+              ref={previewRef}
+              id="pdf-content"
+              className="p-6 sm:p-8 font-serif text-sm leading-relaxed whitespace-pre-wrap bg-white"
+              style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#1a1a2e', lineHeight: '1.8' }}
+            >
+              {fillTemplate(form)}
+            </div>
+          ) : (
+            <div className="p-12 flex flex-col items-center justify-center text-center" style={{ color: '#888888' }}>
+              <svg className="w-12 h-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <p className="text-sm">Chat with the AI assistant to generate your document.</p>
+              <p className="text-xs mt-1">The preview will update as you provide information.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

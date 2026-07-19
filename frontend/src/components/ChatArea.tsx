@@ -20,11 +20,12 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [messages, loading])
 
   useEffect(() => {
@@ -87,7 +88,7 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
         </h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scroll-smooth">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.map((msg, i) => (
           <div key={i} className={`flex animate-in ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
@@ -113,7 +114,6 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
             </div>
           </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
       <div className="border-t border-slate-200 px-4 py-3">
