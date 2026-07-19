@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { AuthModule } from './auth/auth.module'
+import { ChatModule } from './chat/chat.module'
 import { AppController } from './app.controller'
 
 @Module({
@@ -17,6 +18,7 @@ import { AppController } from './app.controller'
       rootPath: join(__dirname, '..', 'public'),
     }),
     AuthModule,
+    ChatModule,
   ],
   controllers: [AppController],
 })
