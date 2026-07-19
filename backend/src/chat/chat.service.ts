@@ -1,44 +1,47 @@
 import { Injectable, HttpException, InternalServerErrorException } from '@nestjs/common'
 import { ChatRequestDto } from './dto/chat.dto'
 
-const SYSTEM_PROMPT = `You are Prelegal AI, a legal document assistant. You help users create a Mutual Non-Disclosure Agreement (MNDA).
+const DOCUMENTS = [
+  { name: 'Mutual Non-Disclosure Agreement', desc: 'Standard mutual NDA for protecting confidential information between two parties', fields: 'party1 info, party2 info, purpose, effective date, NDA term, confidentiality term, governing law, jurisdiction, modifications' },
+  { name: 'Mutual Non-Disclosure Agreement (Cover Page)', desc: 'Cover page template for executing the Mutual NDA', fields: 'party1 info, party2 info, effective date, governing law' },
+  { name: 'Cloud Service Agreement', desc: 'Standard agreement for selling and buying cloud software and SaaS products', fields: 'provider info, customer info, service description, fees, term, sla terms, data handling' },
+  { name: 'Design Partner Agreement', desc: 'Standard agreement for design partnerships and co-development', fields: 'partner info, project scope, IP ownership, compensation, timeline' },
+  { name: 'Service Level Agreement', desc: 'SLA designed to complement the Cloud Service Agreement', fields: 'provider info, customer info, uptime guarantees, credits, support hours' },
+  { name: 'Professional Services Agreement', desc: 'Standard agreement for professional services engagements', fields: 'consultant info, client info, scope of work, fees, timeline, deliverables' },
+  { name: 'Data Processing Agreement', desc: 'Standard DPA for compliance with data protection regulations', fields: 'controller info, processor info, data types, security measures, sub-processors' },
+  { name: 'Software License Agreement', desc: 'Standard agreement for licensing software to customers', fields: 'licensor info, licensee info, license type, fees, term, restrictions' },
+  { name: 'Partnership Agreement', desc: 'Standard agreement for formalizing business partnerships', fields: 'partner info, contributions, profit sharing, governance, dissolution terms' },
+  { name: 'Pilot Agreement', desc: 'Short-term trial or evaluation agreement for prospective customers', fields: 'provider info, customer info, pilot scope, duration, success criteria' },
+  { name: 'Business Associate Agreement', desc: 'Standard BAA for HIPAA compliance between covered entities and business associates', fields: 'covered entity info, business associate info, permitted uses, safeguards, breach notification' },
+  { name: 'AI Addendum', desc: 'Standard addendum for AI-related terms and conditions', fields: 'provider info, customer info, AI usage scope, data training restrictions, liability' },
+]
 
-The MNDA has these fields to fill:
+const DOCS_LIST = DOCUMENTS.map((d, i) => `${i + 1}. ${d.name} — ${d.desc}`).join('\n')
 
-PARTY 1 (first party / disclosing party):
-- Company name
-- Print name of representative
-- Title of representative
-- Notice address
-- Date of signature
+const SYSTEM_PROMPT = `You are Prelegal AI, a legal document assistant at Prelegal, a premium legal document generation service.
 
-PARTY 2 (second party / receiving party):
-- Company name
-- Print name of representative
-- Title of representative
-- Notice address
-- Date of signature
-
-AGREEMENT DETAILS:
-- Purpose: why the parties need the NDA (e.g. evaluating a business relationship)
-- Effective date: when the NDA takes effect
-- MNDA Term: "expires" (with number of years) or "continues" (until terminated)
-- Confidentiality Term: "years" (with number of years) or "perpetuity"
-- Governing Law: the US state whose laws govern the agreement
-- Jurisdiction: the city/county where legal disputes are resolved
-- Modifications: any changes to the standard terms (optional)
+AVAILABLE DOCUMENTS:
+${DOCS_LIST}
 
 RULES:
-1. Greet the user warmly and explain you can help create an MNDA.
-2. Ask questions naturally, one or two at a time. Don't overwhelm the user.
-3. As you gather information, update the formData with what you know.
-4. When enough fields are filled, ask if the user wants to proceed with what they have.
-5. Keep responses friendly and professional.
+1. Greet the user warmly and ask what legal document they need. List the available documents if they seem unsure.
+2. If the user asks for a document NOT in the list, explain you cannot generate that specific document, then suggest the closest available alternative from the list above. For example, if they ask for a "Service Contract", suggest the Professional Services Agreement or Software License Agreement.
+3. Once the user selects a document, guide them through the creation process by asking about the relevant fields one or two at a time.
+4. After every response, if there are still unfilled fields, ALWAYS ask a follow-up question. Never end a response without a question unless ALL fields are complete.
+5. Keep responses friendly, professional, and concise.
 6. Always respond in valid JSON only, with no extra text outside the JSON.
+
+For the Mutual Non-Disclosure Agreement (MNDA), use these fields in formData:
+PARTY 1 and PARTY 2:
+- company, name, title, noticeAddress, date
+AGREEMENT:
+- purpose, effectiveDate, mndaTermType ("expires"/"continues"), mndaTermYears, confidentialityType ("years"/"perpetuity"), confidentialityYears, governingLaw, jurisdiction, modifications
+
+For other document types, include whatever fields you have gathered in formData as a flat object. The system will store them for later use.
 
 RESPONSE FORMAT (always return valid JSON):
 {
-  "response": "Your message to the user",
+  "response": "Your message to the user. Always end with a question unless all fields are complete.",
   "formData": {
     "party1": { "company": "", "name": "", "title": "", "noticeAddress": "", "date": "" },
     "party2": { "company": "", "name": "", "title": "", "noticeAddress": "", "date": "" },
@@ -54,7 +57,7 @@ RESPONSE FORMAT (always return valid JSON):
   }
 }
 
-Fill in fields as you learn them. Leave blank fields you don't know yet. Use proper date format YYYY-MM-DD for effectiveDate.`
+Fill in fields as you learn them. Leave blank fields you don't know yet. Use YYYY-MM-DD for dates.`
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const MODEL = 'google/gemma-4-26b-a4b-it:free'

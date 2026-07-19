@@ -23,13 +23,19 @@ function DocumentPreview({ form }: DocumentPreviewProps) {
           </h2>
           <span className="text-xs" style={{ color: '#888888' }}>Updates automatically</span>
         </div>
-        <div className="max-h-[500px] xl:max-h-[calc(100vh-220px)] overflow-y-auto">
+        <div className="max-h-[500px] xl:max-h-[calc(100vh-220px)] overflow-y-auto bg-white">
           {hasData ? (
             <div
               ref={previewRef}
               id="pdf-content"
-              className="p-6 sm:p-8 font-serif text-sm leading-relaxed whitespace-pre-wrap bg-white"
-              style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#1a1a2e', lineHeight: '1.8' }}
+              className="p-8 sm:p-10 whitespace-pre-wrap"
+              style={{
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontSize: '12px',
+                lineHeight: '1.7',
+                color: '#1a1a2e',
+                backgroundColor: '#ffffff',
+              }}
             >
               {fillTemplate(form)}
             </div>

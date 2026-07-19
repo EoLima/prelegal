@@ -7,11 +7,11 @@ function Header() {
           P
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: '#032147' }}>
-            Mutual NDA Creator
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: '#032147' }}>
+            Prelegal
           </h1>
           <p className="text-sm" style={{ color: '#888888' }}>
-            Generate a professional Mutual Non-Disclosure Agreement
+            AI-powered legal document generation
           </p>
         </div>
       </div>

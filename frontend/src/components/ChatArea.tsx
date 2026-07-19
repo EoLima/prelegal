@@ -15,7 +15,7 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hello! I\'m Prelegal AI. I can help you create a Mutual Non-Disclosure Agreement. What would you like to include in your NDA?',
+      content: 'Hello! I\'m Prelegal AI. I can help you create a legal document — from a Mutual NDA to a Cloud Service Agreement and more. What document do you need today?',
     },
   ])
   const [input, setInput] = useState('')
@@ -29,7 +29,9 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
   }, [messages, loading])
 
   useEffect(() => {
-    if (!loading) inputRef.current?.focus()
+    if (!loading) {
+      requestAnimationFrame(() => inputRef.current?.focus())
+    }
   }, [loading])
 
   const sendMessage = async () => {
