@@ -21,10 +21,15 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, loading])
+
+  useEffect(() => {
+    if (!loading) inputRef.current?.focus()
+  }, [loading])
 
   const sendMessage = async () => {
     const trimmed = input.trim()
@@ -74,21 +79,20 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-[600px] xl:h-[750px]">
-      <div className="border-b border-slate-200 px-5 py-3" style={{ backgroundColor: '#f0f4f8' }}>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-[550px] md:h-[600px] xl:h-[700px]">
+      <div className="border-b border-slate-200 px-5 py-3 flex items-center gap-2" style={{ backgroundColor: '#f0f4f8' }}>
+        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#209dd7' }} />
         <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#032147' }}>
           AI Assistant
         </h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scroll-smooth">
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={i} className={`flex animate-in ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
-                msg.role === 'user'
-                  ? 'text-white'
-                  : 'border'
+              className={`max-w-[88%] md:max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                msg.role === 'user' ? 'text-white' : 'border'
               }`}
               style={
                 msg.role === 'user'
@@ -101,9 +105,11 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
           </div>
         ))}
         {loading && (
-          <div className="flex justify-start">
-            <div className="border rounded-xl px-4 py-2.5 text-sm" style={{ borderColor: '#e0e0e0', backgroundColor: '#f8f9fb' }}>
-              <span className="text-slate-400">Thinking...</span>
+          <div className="flex justify-start animate-in">
+            <div className="border rounded-2xl px-5 py-3 flex items-center gap-1.5" style={{ borderColor: '#e0e0e0', backgroundColor: '#f8f9fb' }}>
+              <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
         )}
@@ -113,12 +119,13 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
       <div className="border-t border-slate-200 px-4 py-3">
         <div className="flex gap-2">
           <input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
             disabled={loading}
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:opacity-50"
+            className="flex-1 rounded-xl border bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none transition-shadow disabled:opacity-50"
             style={{ borderColor: '#e0e0e0' }}
             onFocus={(e) => { e.currentTarget.style.borderColor = '#209dd7'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(32, 157, 215, 0.2)' }}
             onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = '' }}
@@ -126,7 +133,7 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
           <button
             onClick={sendMessage}
             disabled={loading || !input.trim()}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 transition-colors"
+            className="rounded-xl px-5 py-2.5 text-sm font-medium text-white disabled:opacity-40 transition-all hover:brightness-110 active:scale-[0.97]"
             style={{ backgroundColor: '#209dd7' }}
           >
             Send

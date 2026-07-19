@@ -1,20 +1,33 @@
 import type { FormData } from './types'
 
+function addFooter(doc: import('jspdf').jsPDF) {
+  const pageW = doc.internal.pageSize.getWidth()
+  const pageH = doc.internal.pageSize.getHeight()
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.setTextColor(140, 140, 140)
+  doc.line(20, pageH - 12, pageW - 20, pageH - 12)
+  doc.text('Prelegal — Mutual Non-Disclosure Agreement', 20, pageH - 7)
+  const pageNum = doc.getCurrentPageInfo().pageNumber
+  doc.text(`Page ${pageNum}`, pageW - 20, pageH - 7, { align: 'right' })
+}
+
 export async function downloadPdf(form: FormData): Promise<void> {
   const jsPDF = (await import('jspdf')).default
 
   const doc = new jsPDF('p', 'mm', 'a4')
   const pageW = doc.internal.pageSize.getWidth()
   const pageH = doc.internal.pageSize.getHeight()
-  const margin = 20
+  const margin = 22
   const maxW = pageW - margin * 2
   let y = margin
 
-  function addLine(text: string, style?: 'bold' | 'italic' | 'normal', size?: number) {
+  function addLine(text: string, style?: 'bold' | 'italic' | 'normal', size?: number, color?: [number, number, number]) {
     const lines = doc.splitTextToSize(text, maxW)
     const lineH = (size ?? 10) * 0.3528
     lines.forEach((line: string) => {
-      if (y + lineH > pageH - margin) {
+      if (y + lineH > pageH - margin - 10) {
+        addFooter(doc)
         doc.addPage()
         y = margin
       }
@@ -23,8 +36,10 @@ export async function downloadPdf(form: FormData): Promise<void> {
       else doc.setFont('helvetica', 'normal')
 
       doc.setFontSize(size ?? 10)
+      if (color) doc.setTextColor(color[0], color[1], color[2])
+      else doc.setTextColor(30, 30, 30)
       doc.text(line, margin, y)
-      y += lineH * 1.4
+      y += lineH * 1.5
     })
   }
 
@@ -32,64 +47,74 @@ export async function downloadPdf(form: FormData): Promise<void> {
     y += h ?? 4
   }
 
+  function drawHR() {
+    doc.setDrawColor(200, 200, 200)
+    doc.line(margin, y, pageW - margin, y)
+    y += 4
+  }
+
   const d = form
+  const navy: [number, number, number] = [3, 33, 71]
+  const gray: [number, number, number] = [136, 136, 136]
 
-  addLine('Mutual Non-Disclosure Agreement', 'bold', 18)
-  addEmptyLine(6)
-  addLine('Cover Page', 'bold', 13)
-  addEmptyLine(4)
+  addFooter(doc)
 
-  addLine(
-    `This Mutual Non-Disclosure Agreement (the "MNDA") consists of: (1) this Cover Page and (2) the Common Paper Mutual NDA Standard Terms Version 1.0 ("Standard Terms"). Any modifications of the Standard Terms should be made on the Cover Page, which will control over conflicts with the Standard Terms.`
-  )
-  addEmptyLine()
+  addLine('PRELEGAL', 'normal', 8, gray)
+  addEmptyLine(2)
 
-  addLine(`Purpose: ${d.purpose}`)
-  addEmptyLine()
-  addLine(`Effective Date: ${d.effectiveDate}`)
-  addEmptyLine(6)
+  addLine('Mutual Non-Disclosure Agreement', 'bold', 20, navy)
+  drawHR()
 
-  const mndaTerm =
-    d.mndaTermType === 'expires'
-      ? `Expires ${d.mndaTermYears} year(s) from Effective Date.`
-      : 'Continues until terminated in accordance with the terms of the MNDA.'
-  const confidentialityTerm =
-    d.confidentialityType === 'years'
-      ? `${d.confidentialityYears} year(s) from Effective Date, but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws.`
-      : 'In perpetuity.'
-
-  addLine('MNDA Term:', 'bold')
-  addLine(`  [${d.mndaTermType === 'expires' ? 'X' : ' '}] ${mndaTerm}`)
-  addLine(
-    `  [${d.mndaTermType === 'continues' ? 'X' : ' '}] Continues until terminated in accordance with the terms of the MNDA.`
-  )
-  addEmptyLine(4)
-
-  addLine('Term of Confidentiality:', 'bold')
-  addLine(`  [${d.confidentialityType === 'years' ? 'X' : ' '}] ${confidentialityTerm}`)
-  addLine(`  [${d.confidentialityType === 'perpetuity' ? 'X' : ' '}] In perpetuity.`)
-  addEmptyLine(4)
-
-  addLine('Governing Law & Jurisdiction:', 'bold')
-  addLine(`  Governing Law: ${d.governingLaw || '(not specified)'}`)
-  addLine(`  Jurisdiction: ${d.jurisdiction || '(not specified)'}`)
-  addEmptyLine()
-
-  addLine(`MNDA Modifications: ${d.modifications || 'None'}`)
-  addEmptyLine(6)
+  addLine('Cover Page', 'bold', 13, navy)
+  addEmptyLine(3)
 
   addLine(
-    'By signing this Cover Page, each party agrees to enter into this MNDA as of the Effective Date.'
+    'This Mutual Non-Disclosure Agreement (the "MNDA") consists of: (1) this Cover Page and (2) the Common Paper Mutual NDA Standard Terms Version 1.0 ("Standard Terms"). Any modifications of the Standard Terms should be made on the Cover Page, which will control over conflicts with the Standard Terms.',
+    'normal',
+    9,
+    [80, 80, 80]
   )
+  addEmptyLine(6)
+
+  doc.setDrawColor(220, 220, 220)
+  doc.setFillColor(248, 250, 252)
+  doc.roundedRect(margin, y, maxW, 50, 2, 2, 'FD')
+  const boxY = y + 5
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(30, 30, 30)
+  doc.text(`Purpose: ${d.purpose || '(not specified)'}`, margin + 4, boxY)
+  doc.text(`Effective Date: ${d.effectiveDate || '(not specified)'}`, margin + 4, boxY + 7)
+  doc.text(`Governing Law: ${d.governingLaw || '(not specified)'}`, margin + 4, boxY + 14)
+  doc.text(`Jurisdiction: ${d.jurisdiction || '(not specified)'}`, margin + 4, boxY + 21)
+  doc.text(`MNDA Term: ${d.mndaTermType === 'expires' ? `Expires ${d.mndaTermYears} year(s) from Effective Date` : 'Continues until terminated'}`, margin + 4, boxY + 28)
+  doc.text(`Confidentiality: ${d.confidentialityType === 'years' ? `${d.confidentialityYears} year(s)` : 'In perpetuity'}`, margin + 4, boxY + 35)
+  doc.text(`Modifications: ${d.modifications || 'None'}`, margin + 4, boxY + 42)
+  y += 55
+
+  addEmptyLine(6)
+
+  addLine('By signing this Cover Page, each party agrees to enter into this MNDA as of the Effective Date.', 'italic', 9)
   addEmptyLine(8)
 
   const gap = 4
-  const labelW = 30
+  const labelW = 28
   const colW = (maxW - labelW - gap * 2) / 2
   const labelX = margin
-  const p1Center = margin + labelW + gap + colW / 2
-  const p2Center = margin + labelW + gap + colW + gap + colW / 2
-  const rowH = 7
+  const p1Left = margin + labelW + gap
+  const p2Left = margin + labelW + gap + colW + gap
+
+  doc.setDrawColor(180, 180, 180)
+  doc.rect(margin, y, maxW, 50)
+  doc.setFillColor(248, 250, 252)
+  doc.rect(margin, y, maxW, 9, 'F')
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.setTextColor(navy[0], navy[1], navy[2])
+  doc.text('', labelX, y + 6.5)
+  doc.text('PARTY 1', p1Left, y + 6.5)
+  doc.text('PARTY 2', p2Left, y + 6.5)
+  y += 12
 
   const sigRows: { label: string; v1: string; v2: string }[] = [
     { label: 'Signature', v1: '', v2: '' },
@@ -100,46 +125,39 @@ export async function downloadPdf(form: FormData): Promise<void> {
     { label: 'Date', v1: d.party1.date, v2: d.party2.date },
   ]
 
-  function drawUnderline(cx: number, textW: number) {
-    const w = textW > 0 ? textW : 40
-    doc.setDrawColor(180)
-    doc.line(cx - w / 2, y + 1.5, cx + w / 2, y + 1.5)
-  }
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(9)
-  doc.text('', labelX, y)
-  doc.text('PARTY 1', p1Center, y, { align: 'center' })
-  doc.text('PARTY 2', p2Center, y, { align: 'center' })
-  y += rowH + 3
-
   for (const row of sigRows) {
-    if (y + rowH > pageH - margin) {
+    if (y + 9 > pageH - margin - 10) {
+      addFooter(doc)
       doc.addPage()
       y = margin
     }
 
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
-
+    doc.setTextColor(100, 100, 100)
     doc.text(row.label, labelX, y)
 
-    const v1 = row.v1 || ''
-    const v2 = row.v2 || ''
+    doc.setTextColor(30, 30, 30)
+    doc.text(row.v1 || '(sign here)', p1Left, y)
+    doc.text(row.v2 || '(sign here)', p2Left, y)
 
-    doc.text(v1 || ' ', p1Center, y, { align: 'center' })
-    doc.text(v2 || ' ', p2Center, y, { align: 'center' })
+    doc.setDrawColor(200, 200, 200)
+    doc.line(p1Left + 1, y + 1, p1Left + colW - 1, y + 1)
+    doc.line(p2Left + 1, y + 1, p2Left + colW - 1, y + 1)
 
-    drawUnderline(p1Center, doc.getTextWidth(v1))
-    drawUnderline(p2Center, doc.getTextWidth(v2))
-
-    y += rowH + 2
+    y += 9
   }
+  y += 2
+  drawHR()
 
+  addEmptyLine(6)
+  addFooter(doc)
   doc.addPage()
   y = margin
-  addLine('Standard Terms', 'bold', 15)
-  addEmptyLine(6)
+
+  addLine('Standard Terms', 'bold', 15, navy)
+  drawHR()
+  addEmptyLine(5)
 
   const standardTerms = [
     {
@@ -200,17 +218,17 @@ export async function downloadPdf(form: FormData): Promise<void> {
   ]
 
   for (const s of standardTerms) {
-    addLine(`${s.num}. ${s.title}.`, 'bold')
-    addLine(s.text)
-    addEmptyLine(4)
+    addLine(`${s.num}. ${s.title}.`, 'bold', 11, navy)
+    addLine(s.text, 'normal', 9.5)
+    addEmptyLine(5)
   }
 
-  addEmptyLine()
-  addLine(
-    'Common Paper Mutual Non-Disclosure Agreement Version 1.0 - Free to use under CC BY 4.0.',
-    'italic',
-    9
-  )
+  addFooter(doc)
+  addEmptyLine(4)
+  doc.setTextColor(140, 140, 140)
+  doc.setFont('helvetica', 'italic')
+  doc.setFontSize(8)
+  doc.text('Common Paper Mutual Non-Disclosure Agreement Version 1.0 — Free to use under CC BY 4.0', margin, y)
 
   doc.save('Mutual-NDA.pdf')
 }
