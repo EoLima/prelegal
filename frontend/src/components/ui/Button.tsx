@@ -8,7 +8,7 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', loading, children, disabled, ...props }, ref) => {
     const base =
-      'inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+      'inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]'
     const variants: Record<string, string> = {
       primary:
         'text-white shadow-sm hover:brightness-110',
@@ -32,7 +32,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         style={variantStyles[variant]}
         {...props}
       >
-        {loading ? 'Generating PDF...' : children}
+        {loading ? (
+          <>
+            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Generating PDF...
+          </>
+        ) : (
+          children
+        )}
       </button>
     )
   }

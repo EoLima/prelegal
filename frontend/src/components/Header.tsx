@@ -7,7 +7,7 @@ function Header() {
           P
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#032147' }}>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: '#032147' }}>
             Mutual NDA Creator
           </h1>
           <p className="text-sm" style={{ color: '#888888' }}>
