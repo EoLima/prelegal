@@ -57,7 +57,7 @@ RESPONSE FORMAT (always return valid JSON):
 Fill in fields as you learn them. Leave blank fields you don't know yet. Use proper date format YYYY-MM-DD for effectiveDate.`
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const MODEL = 'openai/gpt-oss-20b:free'
+const MODEL = 'google/gemma-4-26b-a4b-it:free'
 
 function extractJson(raw: string): Record<string, unknown> | null {
   const trimmed = raw.trim()

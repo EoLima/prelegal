@@ -21,7 +21,7 @@ When instructed to build a feature:
 
 ## AI design
 
-When writing code to make calls to LLMs, use OpenRouter to the `openrouter/openai/gpt-oss-20b:free` model. You should use Structured Outputs so that you can interpret the results and populate fields in the legal document.
+When writing code to make calls to LLMs, use OpenRouter to the `google/gemma-4-26b-a4b-it:free` model (best free option as of Jul 2026 — 26B params, 262K context, strong instruction following, good free-tier availability). You should use Structured Outputs so that you can interpret the results and populate fields in the legal document.
 
 There is an OPENROUTER_API_KEY in the .env file in the project root.
 
