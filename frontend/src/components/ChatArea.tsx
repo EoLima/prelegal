@@ -1,6 +1,5 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import type { FormData } from '@/lib/types'
 
 type Message = {
   role: 'assistant' | 'user'
@@ -8,7 +7,7 @@ type Message = {
 }
 
 type ChatAreaProps = {
-  onFormUpdate: (data: FormData) => void
+  onFormUpdate: (data: Record<string, unknown>) => void
 }
 
 function ChatArea({ onFormUpdate }: ChatAreaProps) {
@@ -60,8 +59,8 @@ function ChatArea({ onFormUpdate }: ChatAreaProps) {
       const aiMsg: Message = { role: 'assistant', content: data.message ?? '' }
       setMessages((prev) => [...prev, aiMsg])
 
-      if (data.formData) {
-        onFormUpdate(data.formData as FormData)
+      if (data.formData && typeof data.formData === 'object') {
+        onFormUpdate(data.formData as Record<string, unknown>)
       }
     } catch {
       const errMsg: Message = {

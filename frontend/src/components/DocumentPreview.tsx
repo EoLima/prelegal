@@ -2,16 +2,19 @@
 
 import { useRef } from 'react'
 import { fillTemplate } from '@/lib/template'
+import { fillGenericTemplate } from '@/lib/template'
 import type { FormData } from '@/lib/types'
 
 type DocumentPreviewProps = {
   form: FormData
+  extraFields: Record<string, unknown>
 }
 
-function DocumentPreview({ form }: DocumentPreviewProps) {
+function DocumentPreview({ form, extraFields }: DocumentPreviewProps) {
   const previewRef = useRef<HTMLDivElement>(null)
 
-  const hasData = Object.values(form.party1).some(Boolean) || Object.values(form.party2).some(Boolean) || form.purpose || form.governingLaw
+  const isMnda = Object.values(form.party1).some(Boolean) || Object.values(form.party2).some(Boolean) || form.purpose !== ''
+  const hasAny = isMnda || Object.keys(extraFields).length > 0
 
   return (
     <div className="xl:sticky xl:top-8 xl:self-start">
@@ -24,7 +27,7 @@ function DocumentPreview({ form }: DocumentPreviewProps) {
           <span className="text-xs" style={{ color: '#888888' }}>Updates automatically</span>
         </div>
         <div className="max-h-[500px] xl:max-h-[calc(100vh-220px)] overflow-y-auto bg-white">
-          {hasData ? (
+          {hasAny ? (
             <div
               ref={previewRef}
               id="pdf-content"
@@ -37,7 +40,7 @@ function DocumentPreview({ form }: DocumentPreviewProps) {
                 backgroundColor: '#ffffff',
               }}
             >
-              {fillTemplate(form)}
+              {isMnda ? fillTemplate(form) : fillGenericTemplate(extraFields)}
             </div>
           ) : (
             <div className="p-12 flex flex-col items-center justify-center text-center" style={{ color: '#888888' }}>
