@@ -59,25 +59,8 @@ RESPONSE FORMAT (always return valid JSON):
 
 Fill in fields as you learn them. Leave blank fields you don't know yet. Use YYYY-MM-DD for dates.`
 
-const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
-const MODEL = 'gemini-2.0-flash-001'
-
-function toGeminiMessages(messages: { role: string; content: string }[]) {
-  const systemParts: { text: string }[] = []
-  const contents: { role: string; parts: { text: string }[] }[] = []
-
-  for (const msg of messages) {
-    if (msg.role === 'system') {
-      systemParts.push({ text: msg.content })
-    } else if (msg.role === 'user') {
-      contents.push({ role: 'user', parts: [{ text: msg.content }] })
-    } else if (msg.role === 'assistant') {
-      contents.push({ role: 'model', parts: [{ text: msg.content }] })
-    }
-  }
-
-  return { systemParts, contents }
-}
+const OPENCODE_BASE_URL = process.env.OPENCODE_GO_BASE_URL ?? 'https://api.opencode.ai/go/v1'
+const MODEL = 'opencode-go/deepseek-v4-flash'
 
 function extractJson(raw: string): Record<string, unknown> | null {
   const trimmed = raw.trim()
@@ -100,41 +83,40 @@ function extractJson(raw: string): Record<string, unknown> | null {
 @Injectable()
 export class ChatService {
   async chat(dto: ChatRequestDto) {
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.OPENCODE_GO_API_KEY
     if (!apiKey) {
-      throw new InternalServerErrorException('GEMINI_API_KEY not configured')
+      throw new InternalServerErrorException('OPENCODE_GO_API_KEY not configured')
     }
 
-    const { systemParts, contents } = toGeminiMessages(dto.messages)
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...dto.messages,
+    ]
 
-    const body: Record<string, unknown> = {
-      contents,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 2000,
-        responseMimeType: 'application/json',
-      },
+    const body = {
+      model: MODEL,
+      messages,
+      temperature: 0.7,
+      max_tokens: 2000,
+      response_format: { type: 'json_object' },
     }
 
-    if (systemParts.length > 0) {
-      body.systemInstruction = { parts: systemParts }
-    }
-
-    const url = `${GEMINI_API_BASE}/${MODEL}:generateContent?key=${apiKey}`
-
-    const res = await fetch(url, {
+    const res = await fetch(`${OPENCODE_BASE_URL}/chat/completions`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(body),
     })
 
     if (!res.ok) {
       const text = await res.text()
-      throw new HttpException(`Gemini API error: ${res.status} ${text}`, res.status)
+      throw new HttpException(`API error: ${res.status} ${text}`, res.status)
     }
 
     const data = await res.json()
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    const raw = data.choices?.[0]?.message?.content ?? ''
 
     const parsed = extractJson(raw)
     const message = (parsed?.response as string) ?? (raw || '')
