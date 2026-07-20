@@ -59,28 +59,40 @@ RESPONSE FORMAT (always return valid JSON):
 
 Fill in fields as you learn them. Leave blank fields you don't know yet. Use YYYY-MM-DD for dates.`
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const MODEL = 'google/gemma-4-26b-a4b-it:free'
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
+const MODEL = 'gemini-2.0-flash-001'
+
+function toGeminiMessages(messages: { role: string; content: string }[]) {
+  const systemParts: { text: string }[] = []
+  const contents: { role: string; parts: { text: string }[] }[] = []
+
+  for (const msg of messages) {
+    if (msg.role === 'system') {
+      systemParts.push({ text: msg.content })
+    } else if (msg.role === 'user') {
+      contents.push({ role: 'user', parts: [{ text: msg.content }] })
+    } else if (msg.role === 'assistant') {
+      contents.push({ role: 'model', parts: [{ text: msg.content }] })
+    }
+  }
+
+  return { systemParts, contents }
+}
 
 function extractJson(raw: string): Record<string, unknown> | null {
   const trimmed = raw.trim()
-  try {
-    return JSON.parse(trimmed)
-  } catch {}
 
   const blockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (blockMatch) {
-    try {
-      return JSON.parse(blockMatch[1].trim())
-    } catch {}
+    try { return JSON.parse(blockMatch[1].trim()) } catch {}
   }
 
   const braceMatch = trimmed.match(/\{[\s\S]*\}/)
   if (braceMatch) {
-    try {
-      return JSON.parse(braceMatch[0])
-    } catch {}
+    try { return JSON.parse(braceMatch[0]) } catch {}
   }
+
+  try { return JSON.parse(trimmed) } catch {}
 
   return null
 }
@@ -88,40 +100,41 @@ function extractJson(raw: string): Record<string, unknown> | null {
 @Injectable()
 export class ChatService {
   async chat(dto: ChatRequestDto) {
-    const apiKey = process.env.OPENROUTER_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
-      throw new InternalServerErrorException('OPENROUTER_API_KEY not configured')
+      throw new InternalServerErrorException('GEMINI_API_KEY not configured')
     }
 
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...dto.messages,
-    ]
+    const { systemParts, contents } = toGeminiMessages(dto.messages)
 
-    const body = {
-      model: MODEL,
-      messages,
-      temperature: 0.7,
-      max_tokens: 2000,
-    }
-
-    const res = await fetch(OPENROUTER_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://prelegal.app',
+    const body: Record<string, unknown> = {
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 2000,
+        responseMimeType: 'application/json',
       },
+    }
+
+    if (systemParts.length > 0) {
+      body.systemInstruction = { parts: systemParts }
+    }
+
+    const url = `${GEMINI_API_BASE}/${MODEL}:generateContent?key=${apiKey}`
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
 
     if (!res.ok) {
       const text = await res.text()
-      throw new HttpException(`OpenRouter API error: ${res.status} ${text}`, res.status)
+      throw new HttpException(`Gemini API error: ${res.status} ${text}`, res.status)
     }
 
     const data = await res.json()
-    const raw = data.choices?.[0]?.message?.content ?? ''
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
     const parsed = extractJson(raw)
     const message = (parsed?.response as string) ?? (raw || '')
