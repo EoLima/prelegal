@@ -1,6 +1,8 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+/* eslint-disable react-hooks/set-state-in-effect */
+
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 
 type User = { id: number; email: string; name: string }
 
@@ -15,18 +17,23 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>(null!)
 
-function loadSaved(): { token: string | null; user: User | null } {
-  if (typeof window === 'undefined') return { token: null, user: null }
-  const token = localStorage.getItem('prelegal_token')
-  const userStr = localStorage.getItem('prelegal_user')
-  return { token, user: userStr ? JSON.parse(userStr) : null }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [saved] = useState(loadSaved)
-  const [user, setUser] = useState<User | null>(saved.user)
-  const [token, setToken] = useState<string | null>(saved.token)
-  const [loading] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    try {
+      const savedToken = localStorage.getItem('prelegal_token')
+      const savedUser = localStorage.getItem('prelegal_user')
+      if (savedToken && savedUser) {
+        setToken(savedToken)
+        setUser(JSON.parse(savedUser))
+      }
+    } catch {} finally {
+      setLoading(false)
+    }
+  }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await fetch('/api/auth/signin', {

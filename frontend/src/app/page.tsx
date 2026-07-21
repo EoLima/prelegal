@@ -91,7 +91,7 @@ export default function Page() {
   const handleDownload = useCallback(async () => {
     setDownloading(true)
     try {
-      await handleSave()
+      handleSave()
       await downloadPdf(form, extraFields)
     } catch (err) {
       console.error('PDF generation failed', err)
