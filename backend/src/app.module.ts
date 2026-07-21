@@ -4,6 +4,7 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { AuthModule } from './auth/auth.module'
 import { ChatModule } from './chat/chat.module'
+import { DocumentsModule } from './documents/documents.module'
 import { AppController } from './app.controller'
 
 @Module({
@@ -19,6 +20,7 @@ import { AppController } from './app.controller'
     }),
     AuthModule,
     ChatModule,
+    DocumentsModule,
   ],
   controllers: [AppController],
 })
