@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { FormData } from '@/lib/types'
 import { defaultForm } from '@/lib/types'
 import { downloadPdf } from '@/lib/pdfGenerator'
@@ -45,12 +45,6 @@ export default function Page() {
   const [downloading, setDownloading] = useState(false)
   const [saved, setSaved] = useState(false)
   const savedRef = useRef(false)
-
-  useEffect(() => {
-    if (!authLoading && !token) {
-      window.location.href = '/login'
-    }
-  }, [authLoading, token])
 
   const handleFormUpdate = useCallback((data: Record<string, unknown>) => {
     const mnda = extractMnda(data)
@@ -104,6 +98,22 @@ export default function Page() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f4f8 0%, #e8f4fd 100%)' }}>
         <p style={{ color: '#888888' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (!token) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #f0f4f8 0%, #e8f4fd 100%)' }}>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 w-full max-w-sm text-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg mx-auto mb-3" style={{ backgroundColor: '#209dd7', color: '#fff' }}>P</div>
+          <h1 className="text-xl font-bold" style={{ color: '#032147' }}>Welcome to Prelegal</h1>
+          <p className="text-sm mt-2" style={{ color: '#888888' }}>Sign in to generate legal documents with AI.</p>
+          <div className="mt-6 space-y-3">
+            <a href="/login" className="block w-full rounded-xl py-2.5 text-sm font-medium text-white" style={{ backgroundColor: '#753991' }}>Sign in</a>
+            <a href="/signup" className="block w-full rounded-xl py-2.5 text-sm font-medium border" style={{ borderColor: '#d0d5dd', color: '#1a1a2e' }}>Create account</a>
+          </div>
+        </div>
       </div>
     )
   }
