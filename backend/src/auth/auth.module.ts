@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport'
 import { UsersModule } from '../users/users.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
+import { JwtStrategy } from './jwt.strategy'
 
 const jwtSecret = process.env.JWT_SECRET ?? 'prelegal-dev-secret-change-in-production'
 
@@ -17,7 +18,7 @@ const jwtSecret = process.env.JWT_SECRET ?? 'prelegal-dev-secret-change-in-produ
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
