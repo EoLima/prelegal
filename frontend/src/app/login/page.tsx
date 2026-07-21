@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm mt-6" style={{ color: '#888888' }}>
           Don&apos;t have an account?{' '}
-          <a href="/signup" style={{ color: '#209dd7' }} className="font-medium">Sign up</a>
+           <a href="/signup/" style={{ color: '#209dd7' }} className="font-medium">Sign up</a>
         </p>
       </div>
     </div>

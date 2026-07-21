@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (loading) return
-    if (!token) { window.location.href = '/login'; return }
+    if (!token) { window.location.href = '/login/'; return }
     fetch('/api/documents', { headers: authHeaders(token) })
       .then((r) => r.json())
       .then((data: Doc[]) => setDocs(data))
@@ -75,7 +75,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex gap-3">
             <Link href="/" className="rounded-xl px-4 py-2 text-sm font-medium text-white transition-all" style={{ backgroundColor: '#209dd7' }}>New document</Link>
-            <button onClick={() => { logout(); window.location.href = '/login' }} className="rounded-xl px-4 py-2 text-sm font-medium border transition-all" style={{ borderColor: '#d0d5dd', color: '#888888' }}>Sign out</button>
+            <button onClick={() => { logout(); window.location.href = '/login/' }} className="rounded-xl px-4 py-2 text-sm font-medium border transition-all" style={{ borderColor: '#d0d5dd', color: '#888888' }}>Sign out</button>
           </div>
         </div>
 

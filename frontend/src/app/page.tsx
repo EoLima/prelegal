@@ -110,8 +110,8 @@ export default function Page() {
           <h1 className="text-xl font-bold" style={{ color: '#032147' }}>Welcome to Prelegal</h1>
           <p className="text-sm mt-2" style={{ color: '#888888' }}>Sign in to generate legal documents with AI.</p>
           <div className="mt-6 space-y-3">
-            <a href="/login" className="block w-full rounded-xl py-2.5 text-sm font-medium text-white" style={{ backgroundColor: '#753991' }}>Sign in</a>
-            <a href="/signup" className="block w-full rounded-xl py-2.5 text-sm font-medium border" style={{ borderColor: '#d0d5dd', color: '#1a1a2e' }}>Create account</a>
+             <a href="/login/" className="block w-full rounded-xl py-2.5 text-sm font-medium text-white" style={{ backgroundColor: '#753991' }}>Sign in</a>
+            <a href="/signup/" className="block w-full rounded-xl py-2.5 text-sm font-medium border" style={{ borderColor: '#d0d5dd', color: '#1a1a2e' }}>Create account</a>
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function Page() {
         <div className="flex items-center justify-between mb-4">
           <Header />
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-sm font-medium" style={{ color: '#209dd7' }}>My documents</Link>
+             <Link href="/dashboard/" className="text-sm font-medium" style={{ color: '#209dd7' }}>My documents</Link>
             <span className="text-xs" style={{ color: '#888888' }}>{user?.name}</span>
           </div>
         </div>
