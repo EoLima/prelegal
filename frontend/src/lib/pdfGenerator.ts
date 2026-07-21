@@ -1,15 +1,77 @@
 import type { FormData } from './types'
 
-function addFooter(doc: import('jspdf').jsPDF) {
+function addFooter(doc: import('jspdf').jsPDF, label?: string) {
   const pageW = doc.internal.pageSize.getWidth()
   const pageH = doc.internal.pageSize.getHeight()
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7)
   doc.setTextColor(140, 140, 140)
   doc.line(22, pageH - 12, pageW - 22, pageH - 12)
-  doc.text('Prelegal — Mutual Non-Disclosure Agreement', 22, pageH - 7)
+  doc.text(`Prelegal — ${label ?? 'Mutual Non-Disclosure Agreement'}`, 22, pageH - 7)
   const pageNum = doc.getCurrentPageInfo().pageNumber
   doc.text(`Page ${pageNum}`, pageW - 22, pageH - 7, { align: 'right' })
+}
+
+const FIELD_LABELS: Record<string, string> = {
+  providerCompany: 'Provider Company',
+  providerAddress: 'Provider Address',
+  providerContact: 'Provider Contact',
+  customerCompany: 'Customer Company',
+  customerAddress: 'Customer Address',
+  customerContact: 'Customer Contact',
+  serviceDescription: 'Service Description',
+  termMonths: 'Term (months)',
+  startDate: 'Start Date',
+  endDate: 'End Date',
+  effectiveDate: 'Effective Date',
+  fees: 'Fees',
+  paymentTerms: 'Payment Terms',
+  governingLaw: 'Governing Law',
+  jurisdiction: 'Jurisdiction',
+  modifications: 'Modifications',
+  slaTerms: 'SLA Terms',
+  dataHandling: 'Data Handling',
+  uptime: 'Uptime Guarantee',
+  supportHours: 'Support Hours',
+  ipOwnership: 'IP Ownership',
+  compensation: 'Compensation',
+  timeline: 'Timeline',
+  deliverables: 'Deliverables',
+  projectScope: 'Project Scope',
+}
+
+function labelOf(key: string): string {
+  if (FIELD_LABELS[key]) return FIELD_LABELS[key]
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()).trim()
+}
+
+const PARTY_KEYS = ['providerCompany', 'providerAddress', 'providerContact', 'customerCompany', 'customerAddress', 'customerContact']
+const SCOPE_KEYS = ['serviceDescription', 'projectScope', 'deliverables']
+const TERM_KEYS = ['startDate', 'endDate', 'effectiveDate', 'termMonths', 'timeline']
+const FINANCIAL_KEYS = ['fees', 'paymentTerms', 'compensation']
+const LEGAL_KEYS = ['governingLaw', 'jurisdiction', 'modifications', 'slaTerms', 'dataHandling', 'uptime', 'supportHours', 'ipOwnership']
+
+function groupFields(fields: Record<string, unknown>): [string, string, string][][] {
+  const groups: [string, string, string][][] = []
+  const used = new Set<string>()
+  for (const keys of [PARTY_KEYS, SCOPE_KEYS, TERM_KEYS, FINANCIAL_KEYS, LEGAL_KEYS]) {
+    const group: [string, string, string][] = []
+    for (const k of keys) {
+      if (fields[k] != null && fields[k] !== '') {
+        group.push([k, labelOf(k), String(fields[k])])
+        used.add(k)
+      }
+    }
+    if (group.length > 0) groups.push(group)
+  }
+  const rest: [string, string, string][] = []
+  for (const [k, v] of Object.entries(fields)) {
+    if (!used.has(k) && v != null && v !== '') {
+      rest.push([k, labelOf(k), String(v)])
+    }
+  }
+  if (rest.length > 0) groups.push(rest)
+  return groups
 }
 
 async function downloadGenericPdf(doc: import('jspdf').jsPDF, fields: Record<string, unknown>): Promise<void> {
@@ -19,13 +81,14 @@ async function downloadGenericPdf(doc: import('jspdf').jsPDF, fields: Record<str
   const maxW = pageW - margin * 2
   let y = margin
   const navy: [number, number, number] = [3, 33, 71]
+  const gray: [number, number, number] = [136, 136, 136]
 
   function addLine(text: string, style?: 'bold' | 'italic' | 'normal', size?: number, color?: [number, number, number]) {
     const lines = doc.splitTextToSize(text, maxW)
     const lineH = (size ?? 10) * 0.3528
     lines.forEach((line: string) => {
       if (y + lineH > pageH - margin - 10) {
-        addFooter(doc)
+        addFooter(doc, 'Legal Agreement')
         doc.addPage()
         y = margin
       }
@@ -41,26 +104,91 @@ async function downloadGenericPdf(doc: import('jspdf').jsPDF, fields: Record<str
   }
 
   function addEmptyLine(h?: number) { y += h ?? 4 }
+  function drawHR() {
+    doc.setDrawColor(180, 180, 180)
+    doc.line(margin, y, pageW - margin, y)
+    y += 5
+  }
 
-  addFooter(doc)
-  addLine('PREPARED BY PRELEGAL', 'normal', 8, [136, 136, 136])
-  doc.setDrawColor(180, 180, 180)
-  doc.line(margin, y, pageW - margin, y)
-  y += 5
-  addLine('LEGAL AGREEMENT', 'bold', 18, navy)
-  doc.line(margin, y, pageW - margin, y)
-  y += 8
+  const groups = groupFields(fields)
+  const sectionNames = ['PARTIES', 'SCOPE OF SERVICES', 'TERM & DURATION', 'FINANCIAL TERMS', 'LEGAL PROVISIONS', 'ADDITIONAL TERMS']
 
-  const entries = Object.entries(fields).filter(([, v]) => v != null && v !== '')
-  for (const [k, v] of entries) {
-    addLine(`${k}:  ${v}`, 'normal', 10)
+  addFooter(doc, 'Legal Agreement')
+  addLine('PREPARED BY PRELEGAL', 'normal', 8, gray)
+  drawHR()
+  addLine('LEGAL AGREEMENT', 'bold', 20, navy)
+  drawHR()
+  addLine('This document is a draft legal agreement generated by Prelegal AI based on the information you provided. It should be reviewed by a legal professional before signing.', 'normal', 9, [80, 80, 80])
+  addEmptyLine(6)
+
+  let sectionIdx = 0
+  for (const group of groups) {
+    if (sectionIdx > 0) { drawHR(); addEmptyLine(3) }
+    const sectionName = sectionNames[sectionIdx] || 'ADDITIONAL TERMS'
+    addLine(sectionName, 'bold', 11, navy)
     addEmptyLine(2)
+
+    const boxH = group.length * 7 + 8
+    doc.setDrawColor(200, 200, 200)
+    doc.setFillColor(248, 250, 252)
+    doc.roundedRect(margin, y, maxW, boxH, 2, 2, 'FD')
+    const boxY = y + 5
+    for (let i = 0; i < group.length; i++) {
+      const [, label, value] = group[i]
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8.5)
+      doc.setTextColor(100, 100, 100)
+      doc.text(label, margin + 5, boxY + i * 7)
+      doc.setTextColor(30, 30, 30)
+      doc.setFont('helvetica', 'bold')
+      doc.text(value, margin + 70, boxY + i * 7)
+    }
+    y += boxH + 4
+    sectionIdx++
   }
 
   addEmptyLine(6)
-  addLine('This document was generated by Prelegal AI based on the information you provided.', 'italic', 9, [136, 136, 136])
-  addLine('Please review carefully and consult with a legal professional before signing.', 'italic', 9, [136, 136, 136])
-  addFooter(doc)
+  addFooter(doc, 'Legal Agreement')
+  doc.addPage()
+  y = margin
+
+  addLine('SIGNATURE PAGE', 'bold', 15, navy)
+  drawHR()
+  addLine('By signing below, the parties acknowledge that they have reviewed and agree to the terms outlined in this agreement.', 'normal', 10, [80, 80, 80])
+  addEmptyLine(6)
+
+  const sigW = (maxW - 10) / 2
+  const sigH = 24
+  doc.setDrawColor(180, 180, 180)
+  doc.rect(margin, y, sigW, sigH)
+  doc.rect(margin + sigW + 10, y, sigW, sigH)
+  doc.setFillColor(248, 250, 252)
+  doc.rect(margin, y, sigW, 6, 'F')
+  doc.rect(margin + sigW + 10, y, sigW, 6, 'F')
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8)
+  doc.setTextColor(navy[0], navy[1], navy[2])
+  doc.text('PARTY 1', margin + 3, y + 4.5)
+  doc.text('PARTY 2', margin + sigW + 13, y + 4.5)
+
+  const p1Name = String(fields.providerCompany || fields.customerCompany || '')
+  const p2Name = String(fields.customerCompany || '')
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+  doc.setTextColor(30, 30, 30)
+  if (p1Name) doc.text(p1Name, margin + 3, y + 10)
+  doc.text('Signature: _________________', margin + 3, y + 15)
+  doc.text('Date: _________________', margin + 3, y + 20)
+  if (p2Name) doc.text(p2Name, margin + sigW + 13, y + 10)
+  doc.text('Signature: _________________', margin + sigW + 13, y + 15)
+  doc.text('Date: _________________', margin + sigW + 13, y + 20)
+  y += sigH + 8
+
+  addEmptyLine(4)
+  addLine('DISCLAIMER', 'bold', 10, navy)
+  addLine('This document is a draft and has not been reviewed by a legal professional. It is subject to legal review and may require modifications to comply with applicable laws and regulations. Prelegal AI is not a law firm and does not provide legal advice.', 'italic', 9, gray)
+
+  addFooter(doc, 'Legal Agreement')
   doc.save('agreement.pdf')
 }
 
